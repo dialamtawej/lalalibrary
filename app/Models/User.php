@@ -9,6 +9,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Role;
+use App\Models\UserRole;
 
 class User extends Authenticatable
 {
@@ -26,9 +28,10 @@ class User extends Authenticatable
         'email',
         'password',
         'image',
-        'is_banned',
-        'ban_until',
+        'ban_info',
     ];
+
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -51,10 +54,16 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'deleted_at' => 'datetime',
+            'ban_info'=>'array',
         ];
     }
     public function profile()
     {
         return $this->hasOne(UserProfile::class, 'user_id');
+    }
+    public function roles(){
+        return $this->belongsToMany(Role::class,'user_roles','user_id','role_id')->
+        using(UserRole::class)->
+        withPivot(['assigned_at']);
     }
 }

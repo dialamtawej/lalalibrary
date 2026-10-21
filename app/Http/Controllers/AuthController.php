@@ -17,15 +17,22 @@ class AuthController extends Controller
         $credentials = $request->validate(['email' => 'required|email',
                                           'password'=> 'required'  ]);
         $user =User::where('email',$request->email)->first();
-        if ($user && $user->is_banned){
-            if($user->ban_until && now()->greaterThan($user->ban_until)){
-                $user->update(['is_banned'=>false,
-                                 'ban_until'=>null]);
+            if ($user && isset($user->ban_info['is_banned']) && $user->ban_info['is_banned']) {
+        
+            $banUntil = $user->ban_info['ban_until'] ?? null;
+    
+            if ($banUntil && now()->greaterThan($banUntil)) {
+                $user->update([
+                    'ban_info' => [
+                    'is_banned' => false,
+                    'ban_until' => null
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'عذراً حسابك محظور من قبل الإدارة' ], 403);
             }
-            else{
-                return response()->json(['message'=>'عذراً حسابك محظور من قبل الإدارة'],403);
-            }
-        }                                  
+        }                                 
 
         if (Auth::attempt($credentials)){
             /** @var \App\Models\User $user */
