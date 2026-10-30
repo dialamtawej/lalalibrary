@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminPasswordController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BookController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\CategoryController;
 
@@ -28,6 +29,10 @@ Route::middleware('admin.access')->group(function () {
     Route::post('/users/{id}/ban', [UserController::class, 'banUser']);
     Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
     Route::put('/users/{id}/roles', [UserController::class, 'updateRoles']);
+    Route::get('/books',[BookController::class, 'index']);
+    Route::post('/books',[BookController::class, 'store']);
+    Route::post('/books/{id}',[BookController::class, 'updateBook']);
+
 
 
 });
