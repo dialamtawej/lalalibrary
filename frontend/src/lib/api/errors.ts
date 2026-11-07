@@ -30,6 +30,15 @@ export class ApiError extends Error {
   get isNetwork() {
     return this.status === 0;
   }
+  /**
+   * الـ Endpoint غير موجود في Laravel أصلًا (لم يُبنَ بعد).
+   * Laravel يعيد 404 برسالة "The route api/... could not be found."
+   * ويختلف ذلك عن 404 لعنصر غير موجود (مثل: الكتاب غير موجود).
+   * 405 يعني أن المسار موجود بطريقة HTTP أخرى، فلا نعدّه مفقودًا.
+   */
+  get isMissingRoute() {
+    return this.status === 404 && /^The route .+ could not be found/i.test(this.message);
+  }
 }
 
 export function isApiError(error: unknown): error is ApiError {

@@ -28,6 +28,7 @@ export function failureFromError(error: unknown, dict: Dictionary, overrides: Pa
     console.error(error);
     return failure(dict.errors.generic);
   }
+  if (error.isMissingRoute) return failure(`${dict.pending.title}. ${dict.pending.description}`);
   if (overrides[error.status]) return failure(overrides[error.status]!, error.fieldErrors);
   switch (error.status) {
     case 0:

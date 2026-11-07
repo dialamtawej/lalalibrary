@@ -1,6 +1,8 @@
+import enFeatures from "./en-features";
 import type { Dictionary } from "./ar";
 
 const en: Dictionary = {
+  ...enFeatures,
   meta: {
     title: "Lala Library",
     description: "A home for books and novels: discover, search, read, and build your own library.",
@@ -46,6 +48,17 @@ const en: Dictionary = {
     register: "Create account",
     logout: "Sign out",
     account: "My account",
+    authors: "Authors",
+    store: "Store",
+    cart: "Cart",
+    library: "My library",
+    favorites: "Favorites",
+    orders: "My orders",
+    notifications: "Notifications",
+    adminAuthors: "Authors",
+    adminOrders: "Orders",
+    adminProducts: "Store",
+    adminReviews: "Reviews",
   },
   footer: {
     about: "A home for digital and printed books and novels.",
@@ -276,6 +289,9 @@ const en: Dictionary = {
     badge: "In progress",
     title: "This feature is in progress",
     description: "The interface is ready; we're waiting for the backend service.",
+    previewBadge: "Developer preview · example data, not real",
+    previewDescription: "This endpoint doesn't exist in Laravel yet. The UI is shown with the contract's example data and is not interactive.",
+    contractTitle: "Required backend contract",
   },
   errors: {
     generic: "Something went wrong. Please try again.",

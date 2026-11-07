@@ -46,3 +46,13 @@ export function pageParam(value: string | string[] | undefined): number {
   const n = Number(param(value));
   return Number.isInteger(n) && n > 0 ? n : 1;
 }
+
+/** السعر يأتي من Laravel كنص عشري ("12.00") لتجنب أخطاء الأعداد العشرية */
+export function formatMoney(amount: string | number, currency: string, locale: Locale): string {
+  const value = typeof amount === "number" ? amount : Number(amount);
+  try {
+    return new Intl.NumberFormat(localeMeta[locale].intl, { style: "currency", currency }).format(value);
+  } catch {
+    return `${amount} ${currency}`;
+  }
+}

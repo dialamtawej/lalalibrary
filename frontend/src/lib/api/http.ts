@@ -84,3 +84,34 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
 
   return data as T;
 }
+
+type Meta = { current_page: number; last_page: number; per_page: number; total: number; from: number | null; to: number | null };
+
+/**
+ * يقبل الأشكال الثلاثة الشائعة للقوائم في Laravel ويعيد شكلًا واحدًا:
+ * 1) Paginator مباشر:            { data: [...], current_page, last_page, ... }
+ * 2) API Resource Collection:     { data: [...], links: {...}, meta: { current_page, ... } }
+ * 3) Paginator داخل data:         { data: { data: [...], current_page, ... } }
+ * هكذا تستطيع مطورة الباك إند استخدام paginate() أو JsonResource::collection().
+ */
+export function normalizePage<T>(raw: unknown): import("./types").Paginated<T> {
+  const r = raw as { data?: unknown; meta?: Meta } & Partial<Meta>;
+  if (r && r.data && !Array.isArray(r.data) && typeof r.data === "object" && Array.isArray((r.data as { data?: unknown }).data)) {
+    return normalizePage<T>(r.data);
+  }
+  const items = (Array.isArray(r?.data) ? r.data : []) as T[];
+  const meta: Partial<Meta> = r?.meta ?? r ?? {};
+  return {
+    data: items,
+    current_page: meta.current_page ?? 1,
+    last_page: meta.last_page ?? 1,
+    per_page: meta.per_page ?? items.length,
+    total: meta.total ?? items.length,
+    from: meta.from ?? (items.length ? 1 : null),
+    to: meta.to ?? (items.length || null),
+  };
+}
+
+export async function apiPage<T>(path: string, options: ApiRequestOptions = {}) {
+  return normalizePage<T>(await apiFetch<unknown>(path, options));
+}

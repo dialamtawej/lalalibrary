@@ -15,6 +15,49 @@
 - الصور والملفات العامة: أعيدي رابطًا كاملًا عبر Accessor، مثل `cover_url` في `Book` و `image_url` في `User`.
 - **تعلّم مقترح:** استخدمي في الميزات الجديدة `FormRequest` للتحقق، و`API Resource` لشكل الاستجابة، و`Policy` للصلاحيات. سنراجعها معًا.
 
+## كيف تعرف الواجهة أن الـ Endpoint أصبح جاهزًا؟ (مهم)
+
+لا يلزم تعديل أي شيء في الواجهة عند إنهاء ميزة.
+
+1. الواجهة ترسل طلب فحص (GET بدون توكن) لكل ميزة. يُعاد الفحص كل دقيقة تقريبًا.
+2. النتيجة تُقرأ هكذا:
+   - إذا أعاد Laravel `404` برسالة `The route api/... could not be found.`، فالميزة **غير مبنية**. تعرض الواجهة "قيد التطوير".
+   - أي استجابة أخرى (200، 401، 403، 405، 422، أو 404 لعنصر غير موجود) تعني أن **المسار موجود**. تُفعَّل الواجهة تلقائيًا.
+3. لذلك: **أضيفي الـ Route فقط عندما يكون الـ Controller جاهزًا.** Route موجود بـ Controller ناقص سيُظهر أخطاء للمستخدمين.
+
+| الميزة | مسار الفحص |
+|---|---|
+| المؤلفون | `GET /authors` |
+| إدارة المؤلفين | `GET /admin/authors` (405 يكفي إن كان المسار POST فقط) |
+| المتابعة | `GET /me/following` |
+| القراءة | `GET /books/__probe__/progress` |
+| المكتبة | `GET /me/library` |
+| المفضلة | `GET /me/favorites` |
+| المراجعات | `GET /books/__probe__/reviews` |
+| إدارة المراجعات | `GET /admin/reviews` |
+| المتجر | `GET /store/products` |
+| إدارة المنتجات | `GET /admin/products` |
+| السلة | `GET /cart` |
+| الطلبات | `GET /orders` |
+| إدارة الطلبات | `GET /admin/orders` |
+| الإشعارات | `GET /notifications/unread-count` |
+| التوصيات | `GET /me/recommendations` |
+| الإحصائيات | `GET /admin/stats` |
+
+### وضع المعاينة للمطورين
+مع `SHOW_API_CONTRACTS=true` (مفعّل افتراضيًا في Docker للتطوير):
+- كل صفحة لميزة غير مبنية تعرض **نفس الواجهة النهائية ببيانات مثال**، مع إطار متقطع وشارة "بيانات مثال وليست حقيقية"، وتكون غير قابلة للتفاعل.
+- فوقها **العقد المطلوب**: الـ Endpoints والطرق والصلاحيات.
+- بيانات المثال موجودة في `frontend/src/lib/pending/examples.ts` وهي مطابقة تمامًا لما يجب أن يعيده الـ API. افتحيه بجانب الـ Controller.
+- قائمة العقود في `frontend/src/lib/pending/contracts.ts`.
+- صفحات للتجربة: `/ar/authors`، `/ar/store`، `/ar/cart`، `/ar/checkout`، `/ar/account/library`، `/ar/account/favorites`، `/ar/account/orders`، `/ar/account/notifications`، `/ar/read/{slug}`، و`/ar/admin/authors|orders|products|reviews`.
+
+### أشكال القوائم المقبولة
+الواجهة تقبل أيًّا من هذه الأشكال:
+- `Model::paginate()` مباشرة.
+- `JsonResource::collection($paginator)`، أي `{ data, links, meta }`.
+- `{ data: paginator }` كما في `/books`.
+
 ## ترتيب العمل المقترح
 
 | # | الميزة | الأولوية في الدراسة | يعتمد على |
@@ -250,3 +293,4 @@
 | التاريخ | التغيير |
 |---|---|
 | 2026-11-07 | النسخة الأولى |
+| 2026-11-07 | أُضيفت آلية الفحص التلقائي ووضع المعاينة؛ الواجهات لكل الأقسام §2 إلى §12 مبنية وتنتظر الـ Endpoints |

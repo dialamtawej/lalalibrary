@@ -72,6 +72,22 @@ src/
 5. ابني الصفحة في `app/[lang]/...`، وضعي كل قراءة وقت الطلب داخل `<Suspense>`.
 6. النماذج تستخدم `<ActionForm>`، وأخطاء Laravel (422) تظهر تحت الحقول تلقائيًا عبر `useFieldError`.
 
-## الميزات بانتظار الباك إند
+## الميزات بانتظار الباك إند (Pending Integration)
 
-انظري `../docs/BACKEND_PENDING.md`.
+```
+src/lib/pending/
+├─ contracts.ts      العقد لكل ميزة: الـ Endpoints + مسار الفحص
+├─ capabilities.ts   getCapabilities(): أي الميزات بُنيت في Laravel (فحص تلقائي، يُحدَّث كل دقيقة تقريبًا)
+└─ examples.ts       بيانات مثال مطابقة للعقود (لوضع المعاينة فقط)
+src/components/pending/feature-gate.tsx
+```
+
+- `<FeatureGate feature load example>{(data) => …}</FeatureGate>`: يحمّل البيانات.
+  - إذا كان الـ Endpoint غير موجود في Laravel، يعرض "قيد التطوير".
+  - مع `SHOW_API_CONTRACTS=true` يعرض الواجهة ببيانات المثال (غير قابلة للتفاعل) مع العقد.
+- الأزرار (قراءة، مكتبة، مفضلة، شراء، متابعة…) تظهر فقط عندما تكون خدمتها متاحة (`getCapabilities`)، فلا توجد أزرار لا تعمل.
+- `SHOW_API_CONTRACTS` يُقرأ وقت التشغيل **ووقت البناء**. في الإنتاج اتركيه `false` عند `npm run build` وعند التشغيل.
+- قارئ PDF مبني على `pdfjs-dist`. ملفات الخطوط والـ cMaps تُنسخ إلى `public/pdfjs` تلقائيًا بعد `npm install`، عبر `scripts/copy-pdfjs-assets.mjs`.
+- ملف الكتاب يمر عبر `/api/books/[slug]/file` (Route Handler يضيف التوكن)، فلا يرى المتصفح التوكن ولا رابطًا مباشرًا للملف.
+
+العقود الكاملة: `../docs/BACKEND_PENDING.md`.

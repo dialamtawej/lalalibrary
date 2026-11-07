@@ -12,6 +12,9 @@ import { ButtonLink } from "@/components/ui/button";
 import { EmptyState, Skeleton } from "@/components/ui/misc";
 import { LoadError } from "@/components/ui/load-error";
 import { formatNumber } from "@/lib/utils";
+import { getCurrentUser } from "@/lib/auth/dal";
+import { getCapabilities } from "@/lib/pending/capabilities";
+import { getRecommendations } from "@/lib/services/features";
 
 export default async function HomePage() {
   const { locale, dict } = await getI18n();
@@ -66,6 +69,11 @@ export default async function HomePage() {
           </Suspense>
         </div>
       </section>
+
+      {/* ---------------- توصيات شخصية (§11) — للمستخدم المسجل عند توفر الخدمة ---------------- */}
+      <Suspense fallback={null}>
+        <ForYou locale={locale} dict={dict} />
+      </Suspense>
 
       {/* ---------------- Categories ---------------- */}
       <section className="container-page py-12" aria-labelledby="home-categories">
@@ -246,5 +254,26 @@ async function LatestBooks({ locale, dict }: { locale: Locale; dict: Dictionary 
         </div>
       ) : null}
     </>
+  );
+}
+
+async function ForYou({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+  const [caps, user] = await Promise.all([getCapabilities(), getCurrentUser().catch(() => null)]);
+  if (!user || !caps.recommendations) return null;
+  const recs = await getRecommendations().catch(() => null);
+  if (!recs?.for_reading.length) return null;
+  return (
+    <section className="container-page py-12" aria-labelledby="home-for-you">
+      <span className="ornament" aria-hidden />
+      <h2 id="home-for-you" className="mt-2 font-display text-2xl font-bold text-ink-900 sm:text-3xl">
+        {dict.recommendations.title}
+      </h2>
+      <p className="mb-8 mt-1 text-muted">{dict.recommendations.subtitle}</p>
+      <BookGrid>
+        {recs.for_reading.slice(0, 10).map((book) => (
+          <BookCard key={book.id} book={book} locale={locale} dict={dict} />
+        ))}
+      </BookGrid>
+    </section>
   );
 }

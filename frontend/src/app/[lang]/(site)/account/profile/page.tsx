@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ProfilePage() {
   const { locale, dict } = await getI18n();
   return (
-    <div className="container-page max-w-5xl py-10 sm:py-14">
+    <div>
       <PageHeader title={dict.profile.title} description={dict.profile.subtitle} />
       <Suspense fallback={<ProfileSkeleton />}>
         <ProfileContent locale={locale} dict={dict} />
@@ -52,7 +52,7 @@ async function ProfileContent({ locale, dict }: { locale: Locale; dict: Dictiona
         <PendingFeature
           badge={dict.pending.badge}
           title={dict.profile.comingTitle}
-          items={[dict.profile.comingContact, dict.profile.comingLibrary, dict.profile.comingOrders]}
+          items={[dict.profile.comingContact]}
         />
       </aside>
       <ProfileForm name={user.name} imageUrl={user.image_url} />

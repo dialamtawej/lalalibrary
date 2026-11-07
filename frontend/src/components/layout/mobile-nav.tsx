@@ -34,7 +34,7 @@ export function MobileNav({ items, user }: { items: NavItem[]; user: MenuUser | 
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="grid size-11 place-items-center rounded-full text-ink-800 hover:bg-ink-50 md:hidden"
+        className="grid size-10 place-items-center rounded-full text-ink-800 hover:bg-ink-50 sm:size-11 md:hidden"
         aria-label={dict.common.menu}
         aria-expanded={open}
       >

@@ -56,6 +56,9 @@ services:
       # خادم Next يتصل بـ Laravel عبر الشبكة الداخلية (اسم الخدمة nginx)، وليس localhost
       LARAVEL_API_URL: http://nginx/api
       NEXT_TELEMETRY_DISABLED: "1"
+      # وضع المعاينة للمطورين: الميزات التي لم يُبنَ لها Endpoint بعد تُعرض ببيانات مثال
+      # مع العقد المطلوب من docs/BACKEND_PENDING.md. يجب أن يكون false في الإنتاج.
+      SHOW_API_CONTRACTS: ${SHOW_API_CONTRACTS:-true}
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     volumes:

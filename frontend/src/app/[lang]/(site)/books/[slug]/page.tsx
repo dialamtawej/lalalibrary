@@ -4,22 +4,26 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BookOpenText, CalendarDays, ChevronLeft, ChevronRight, FileX2 } from "lucide-react";
 import { getI18n } from "@/lib/i18n/server";
-import { localeMeta, type Locale } from "@/lib/i18n/config";
+import { format, localeMeta, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries/ar";
-import type { Book } from "@/lib/api/types";
+import type { Book, BookFull } from "@/lib/api/types";
 import { isApiError } from "@/lib/api/errors";
-import { getBookCached, listBooks } from "@/lib/services/catalog";
+import { listBooks } from "@/lib/services/catalog";
+import { getBookFull } from "@/lib/services/features";
+import { BookActions } from "@/components/books/book-actions";
+import { ReviewsSection } from "@/components/reviews/reviews-section";
+import { Stars } from "@/components/reviews/stars";
 import { BookCover } from "@/components/books/book-cover";
 import { BookCard, BookGrid } from "@/components/books/book-card";
 import { ShareButton } from "@/components/books/share-button";
-import { Badge, PendingFeature, Skeleton } from "@/components/ui/misc";
+import { Badge, Skeleton } from "@/components/ui/misc";
 import { LoadError } from "@/components/ui/load-error";
 import { formatDate } from "@/lib/utils";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/books/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   try {
-    const book = await getBookCached(slug);
+    const book = await getBookFull(slug);
     return {
       title: book.title,
       description: book.description?.slice(0, 160) ?? undefined,
@@ -43,9 +47,9 @@ export default async function BookPage({ params }: PageProps<"/[lang]/books/[slu
 
 async function BookContent({ params, locale, dict }: { params: PageProps<"/[lang]/books/[slug]">["params"]; locale: Locale; dict: Dictionary }) {
   const { slug } = await params;
-  let book: Book;
+  let book: BookFull;
   try {
-    book = await getBookCached(slug);
+    book = await getBookFull(slug);
   } catch (error) {
     if (isApiError(error) && error.isNotFound) notFound();
     return <LoadError error={error} dict={dict} title={dict.books.loadError} />;
@@ -107,6 +111,31 @@ async function BookContent({ params, locale, dict }: { params: PageProps<"/[lang
 
           <h1 className="mt-4 font-display text-3xl font-bold leading-tight text-ink-900 sm:text-5xl">{book.title}</h1>
 
+          {/* المؤلفون والتقييم (§2، §5) — تظهر تلقائيًا عند إضافتها في الـ API */}
+          {book.authors?.length || book.rating ? (
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              {book.authors?.length ? (
+                <p className="text-lg text-muted">
+                  {dict.bookExtra.by}{" "}
+                  {book.authors.map((a, i) => (
+                    <span key={a.id}>
+                      {i > 0 ? "، " : null}
+                      <Link href={`/${locale}/authors/${a.slug}`} className="font-semibold text-ink-800 hover:underline">
+                        {a.name}
+                      </Link>
+                    </span>
+                  ))}
+                </p>
+              ) : null}
+              {book.rating && book.rating.count > 0 ? (
+                <a href="#reviews-title" className="inline-flex items-center gap-2 text-sm text-muted">
+                  <Stars value={book.rating.average} label={format(dict.reviews.outOf, { rating: book.rating.average.toFixed(1) })} />
+                  {format(dict.reviews.count, { count: book.rating.count })}
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+
           <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm">
             <div className="flex items-center gap-2">
               <dt className="sr-only">{t.availability}</dt>
@@ -146,15 +175,19 @@ async function BookContent({ params, locale, dict }: { params: PageProps<"/[lang
             )}
           </section>
 
-          <PendingFeature
-            className="mt-10"
-            badge={dict.pending.badge}
-            title={t.comingTitle}
-            description={dict.pending.description}
-            items={[t.comingReading, t.comingLibrary, t.comingReviews, t.comingStore]}
-          />
+          <EditionsDetails book={book} locale={locale} dict={dict} />
+
+          <div className="mt-10">
+            <Suspense fallback={<Skeleton className="h-24 rounded-2xl" />}>
+              <BookActions book={book} locale={locale} dict={dict} />
+            </Suspense>
+          </div>
         </div>
       </article>
+
+      <Suspense fallback={null}>
+        <ReviewsSection book={book} locale={locale} dict={dict} />
+      </Suspense>
 
       {book.categories[0] ? (
         <Suspense fallback={null}>
@@ -200,5 +233,51 @@ function BookSkeleton() {
         <Skeleton className="mt-8 h-40 w-full" />
       </div>
     </div>
+  );
+}
+
+/** معلومات النشر من النسخ (§2): اللغة، الصفحات، الناشر، التاريخ */
+function EditionsDetails({ book, locale, dict }: { book: BookFull; locale: Locale; dict: Dictionary }) {
+  if (!book.editions?.length) return null;
+  const t = dict.bookExtra;
+  return (
+    <section className="mt-10" aria-labelledby="book-editions">
+      <h2 id="book-editions" className="text-lg font-bold text-ink-900">
+        {t.details}
+      </h2>
+      <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+        {book.editions.map((e) => (
+          <li key={e.id} className="rounded-2xl bg-surface p-4 ring-1 ring-line">
+            <Badge tone={e.format === "ebook" ? "saffron" : "ink"}>{t.formats[e.format]}</Badge>
+            <dl className="mt-3 space-y-1 text-sm">
+              {e.language ? (
+                <div className="flex gap-2">
+                  <dt className="text-muted">{t.language}:</dt>
+                  <dd className="font-semibold">{e.language.name}</dd>
+                </div>
+              ) : null}
+              {e.page_count ? (
+                <div className="flex gap-2">
+                  <dt className="sr-only">{t.pages}</dt>
+                  <dd className="font-semibold">{format(t.pages, { count: e.page_count })}</dd>
+                </div>
+              ) : null}
+              {e.publisher ? (
+                <div className="flex gap-2">
+                  <dt className="text-muted">{t.publisher}:</dt>
+                  <dd className="font-semibold">{e.publisher.name}</dd>
+                </div>
+              ) : null}
+              {e.publication_date ? (
+                <div className="flex gap-2">
+                  <dt className="text-muted">{t.published}:</dt>
+                  <dd className="font-semibold">{formatDate(e.publication_date, locale)}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

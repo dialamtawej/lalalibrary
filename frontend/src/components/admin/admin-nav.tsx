@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookCopy, LayoutGrid, Menu, Shapes, Users, X, type LucideIcon } from "lucide-react";
+import { BookCopy, Feather, LayoutGrid, Menu, MessageSquareWarning, Package, Shapes, Store, Users, X, type LucideIcon } from "lucide-react";
 import { useI18n } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils";
 import { isActivePath } from "@/components/layout/nav-links";
@@ -17,6 +17,10 @@ function useItems(): Item[] {
     { href: base, label: dict.admin.nav.overview, Icon: LayoutGrid, exact: true },
     { href: `${base}/books`, label: dict.admin.nav.books, Icon: BookCopy },
     { href: `${base}/categories`, label: dict.admin.nav.categories, Icon: Shapes },
+    { href: `${base}/authors`, label: dict.nav.adminAuthors, Icon: Feather },
+    { href: `${base}/orders`, label: dict.nav.adminOrders, Icon: Package },
+    { href: `${base}/products`, label: dict.nav.adminProducts, Icon: Store },
+    { href: `${base}/reviews`, label: dict.nav.adminReviews, Icon: MessageSquareWarning },
     { href: `${base}/users`, label: dict.admin.nav.users, Icon: Users },
   ];
 }

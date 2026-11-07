@@ -18,7 +18,7 @@ export function Logo({ locale, name, className }: { locale: Locale; name: string
   return (
     <Link href={`/${locale}`} className={cn("flex items-center gap-2.5 rounded-xl", className)}>
       <LogoMark />
-      <span className="font-display text-xl font-bold tracking-tight text-ink-900">{name}</span>
+      <span className="whitespace-nowrap font-display text-xl font-bold tracking-tight text-ink-900">{name}</span>
     </Link>
   );
 }

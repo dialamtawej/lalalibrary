@@ -1,4 +1,6 @@
+import arFeatures from "./ar-features";
 const ar = {
+  ...arFeatures,
   meta: {
     title: "مكتبة لالا",
     description: "منصة للكتب والروايات: اكتشف، ابحث، واقرأ، وكوّن مكتبتك الخاصة.",
@@ -44,6 +46,17 @@ const ar = {
     register: "إنشاء حساب",
     logout: "تسجيل الخروج",
     account: "حسابي",
+    authors: "المؤلفون",
+    store: "المتجر",
+    cart: "السلة",
+    library: "مكتبتي",
+    favorites: "المفضلة",
+    orders: "طلباتي",
+    notifications: "الإشعارات",
+    adminAuthors: "المؤلفون",
+    adminOrders: "الطلبات",
+    adminProducts: "المتجر",
+    adminReviews: "المراجعات",
   },
   footer: {
     about: "منصة عربية للكتب والروايات الإلكترونية والورقية.",
@@ -274,6 +287,9 @@ const ar = {
     badge: "قيد التطوير",
     title: "هذه الميزة قيد التطوير",
     description: "الواجهة جاهزة وننتظر اكتمال الخدمة في الباك إند.",
+    previewBadge: "معاينة للمطورين · بيانات مثال وليست حقيقية",
+    previewDescription: "الـ Endpoint غير موجود بعد في Laravel. هذه الواجهة معروضة ببيانات المثال من العقد، وغير قابلة للتفاعل.",
+    contractTitle: "العقد المطلوب من الباك إند",
   },
   errors: {
     generic: "حدث خطأ غير متوقع. حاول مرة أخرى.",

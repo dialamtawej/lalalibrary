@@ -3,7 +3,7 @@ import { defaultLocale, isLocale, LOCALE_COOKIE, type Locale } from "@/lib/i18n/
 
 const TOKEN_COOKIE = "lala_token";
 /** صفحات تتطلب تسجيل الدخول (فحص تفاؤلي: وجود الكوكي فقط؛ الفحص الحقيقي في الصفحة) */
-const PROTECTED = /^\/(ar|en)\/(admin|account)(\/|$)/;
+const PROTECTED = /^\/(ar|en)\/(admin|account|read|cart|checkout)(\/|$)/;
 
 function preferredLocale(request: NextRequest): Locale {
   const saved = request.cookies.get(LOCALE_COOKIE)?.value;
