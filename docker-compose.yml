@@ -1,16 +1,70 @@
-version: '3.8'
+# ========================================================
+# ملاحظة مراجعة - بيئة تطوير مكتبة لالا
+# التغييرات عن النسخة السابقة (تفاصيلها في DOCKER_SETUP.md):
+#  - كلمات مرور MySQL لم تعد مكتوبة هنا؛ تُقرأ من ملف .env (غير مرفوع لـ Git).
+#    لم نُبقِ القيم القديمة كتعليق لأنها أسرار مكشوفة ويجب تغييرها.
+#  - إضافة nginx: سابقًا لم يكن هناك خادم HTTP، فالـ API لم يكن قابلًا للوصول.
+#  - Volume مسمّى لبيانات MySQL حتى لا تضيع عند إعادة إنشاء الحاوية.
+#  - Healthcheck لقاعدة البيانات، و app ينتظر جاهزيتها.
+#  - منفذ MySQL متاح للجهاز المحلي فقط (127.0.0.1) لأدوات مثل DBeaver.
+#  - حذف "version" لأنه لم يعد مستخدمًا في Docker Compose v2.
+# أسماء الخدمات (app, db) وأسماء الحاويات بقيت كما هي.
+# ========================================================
 
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        UID: ${DOCKER_UID:-1000}
+        GID: ${DOCKER_GID:-1000}
     image: lalalibrary-app
     container_name: lalalibrary_app_container
     restart: unless-stopped
     working_dir: /var/www
     volumes:
       - ./:/var/www
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - lalalibrary-network
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: lalalibrary_nginx_container
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - ./:/var/www:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - lalalibrary-network
+
+  # واجهة Next.js (وضع التطوير مع Hot Reload)
+  frontend:
+    image: node:22-alpine
+    container_name: lalalibrary_frontend_container
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm ci --no-audit --no-fund && npm run dev -- --hostname 0.0.0.0 --port 3000"
+    environment:
+      # خادم Next يتصل بـ Laravel عبر الشبكة الداخلية (اسم الخدمة nginx)، وليس localhost
+      LARAVEL_API_URL: http://nginx/api
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      # node_modules و .next داخل Volumes منفصلة: أسرع على Windows ولا تختلط بملفات جهازك
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+    depends_on:
+      - nginx
     networks:
       - lalalibrary-network
 
@@ -19,14 +73,27 @@ services:
     container_name: lalalibrary_db_container
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: lalalibrary_db
-      MYSQL_ROOT_PASSWORD: "54dd54d"
-      MYSQL_USER: diala
-      MYSQL_PASSWORD: "123d123d"
+      MYSQL_DATABASE: ${DB_DATABASE:-lalalibrary_db}
+      MYSQL_USER: ${DB_USERNAME:-lalalibrary}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in .env}
     ports:
-      - "3306:3306"
+      - "127.0.0.1:${FORWARD_DB_PORT:-3306}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
     networks:
       - lalalibrary-network
+
+volumes:
+  db_data:
+  frontend_node_modules:
+  frontend_next:
 
 networks:
   lalalibrary-network:

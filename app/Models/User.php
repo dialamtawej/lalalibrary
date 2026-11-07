@@ -43,6 +43,21 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    /*
+    ========================================================
+    ADDED - مراجعة: رابط كامل للصورة الشخصية (image_url)
+    العمود image يحفظ مسارًا نسبيًا مثل profiles/abc.jpg، والواجهة تحتاج رابطًا كاملًا.
+    ========================================================
+    */
+    protected $appends = ['image_url'];
+
+    protected function imageUrl(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn () => $this->image ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->image) : null,
+        );
+    }
+
     /**
      * Get the attributes that should be cast.
      *
