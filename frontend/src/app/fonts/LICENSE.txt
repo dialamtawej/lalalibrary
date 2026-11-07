@@ -1,0 +1,5 @@
+Fonts in this folder are licensed under the SIL Open Font License 1.1:
+- IBM Plex Sans Arabic (IBM)
+- Amiri (The Amiri Project Authors)
+- Fraunces (Undercase Type)
+Source: @fontsource npm packages. https://openfontlicense.org

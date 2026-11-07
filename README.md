@@ -1,59 +1,53 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# مكتبة لالا — Lala Library
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+منصة للكتب والروايات: استكشاف الكتب والبحث عنها، قراءة النسخ الإلكترونية، مكتبة شخصية، تقييمات ومراجعات، ومتجر للكتب الورقية مع لوحة تحكم إدارية.
 
-## About Laravel
+| الجزء | التقنية | المجلد |
+|---|---|---|
+| Backend API | Laravel 12 · PHP 8.2 · Sanctum (Bearer Tokens) | جذر المستودع |
+| Database | MySQL 8.0 | خدمة `db` في Docker |
+| Frontend | Next.js 16 · React 19 · TypeScript · Tailwind 4 | `frontend/` |
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## التشغيل السريع
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+المتطلب الوحيد: Docker Desktop.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+cp .env.example .env          # ثم املئي DB_PASSWORD و DB_ROOT_PASSWORD وبيانات الأدمن
+docker compose up -d --build
+docker compose exec app php artisan migrate --seed
+```
 
-## Learning Laravel
+- الواجهة: `http://localhost:3000`
+- الـ API: `http://localhost:8000/api`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+التفاصيل الكاملة والأوامر وحل المشاكل في [DOCKER_SETUP.md](DOCKER_SETUP.md).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## الحسابات التجريبية (بيئة local فقط)
 
-## Laravel Sponsors
+| الحساب | البريد | كلمة المرور |
+|---|---|---|
+| Admin | `SEED_ADMIN_EMAIL` من `.env` | `SEED_ADMIN_PASSWORD` من `.env` (أو تُطبع عند التشغيل إن تُركت فارغة) |
+| مستخدمون | `sdra@example.com`, `dalaa@example.com`, `test@example.com` | `SEED_USER_PASSWORD` (الافتراضي `password`) |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## المصادقة
 
-### Premium Partners
+```http
+POST /api/login
+Accept: application/json
+Content-Type: application/json
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+{ "email": "...", "password": "..." }
+```
+الاستجابة تحتوي `access_token`. يُرسل في الطلبات المحمية بالهيدر:
+```
+Authorization: Bearer <access_token>
+```
 
-## Contributing
+## الوثائق
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- [DOCKER_SETUP.md](DOCKER_SETUP.md): بيئة التطوير.
+- [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md): جدول حالة كل Feature في الباك إند والواجهة.
+- [docs/BACKEND_PENDING.md](docs/BACKEND_PENDING.md): مهام الباك إند المتبقية وعقود الـ API المطلوبة.
+- [docs/BACKEND_CHANGES.md](docs/BACKEND_CHANGES.md): سجل مراجعات وتعديلات الباك إند مع شرح كل تعديل.
+- [frontend/README.md](frontend/README.md): بنية الواجهة وطريقة إضافة Feature.
