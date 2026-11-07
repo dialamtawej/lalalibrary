@@ -6,6 +6,7 @@
 #    بينما الافتراضي في PHP هو 2MB فقط، فكان رفع الكتب سيفشل).
 #  - التشغيل بمستخدم غير root (laravel) بدل root.
 #  - Entrypoint يثبت حزم Composer تلقائيًا ويجهز مجلدات storage.
+#  - سياق البناء هو جذر المستودع (لنصل إلى docker/)، وكود Laravel في backend/.
 # ========================================================
 FROM php:8.2-fpm
 
@@ -37,7 +38,7 @@ RUN groupadd -g ${GID} laravel && useradd -u ${UID} -g laravel -m -s /bin/bash l
 
 WORKDIR /var/www
 
-COPY --chown=laravel:laravel . .
+COPY --chown=laravel:laravel backend/ .
 
 USER laravel
 

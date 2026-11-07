@@ -5,6 +5,7 @@
 > كل تعديل على كود موجود محفوظ في الملف نفسه بتنسيق
 > `PREVIOUS IMPLEMENTATION - KEPT FOR REVIEW` ثم `UPDATED IMPLEMENTATION`.
 > لعرض كل الفروقات: `git diff main..fix/discovery-review`
+> مسارات ملفات Laravel في هذه الوثيقة نسبية إلى مجلد `backend/` (مثلًا `routes/api.php` تعني `backend/routes/api.php`).
 
 ## كيف تقرئين هذا الملف
 كل بند فيه: **المشكلة**، و**لماذا هي مشكلة**، و**الإصلاح**، و**المفهوم** الذي يستحق التعلم منه.

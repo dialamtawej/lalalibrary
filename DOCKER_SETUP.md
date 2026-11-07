@@ -23,16 +23,25 @@ Postman ──► nginx :8000 ────────────────�
 - **عنوانان مختلفان لـ Laravel:** خادم Next داخل Docker يصل إليه عبر `http://nginx/api`، وهذا مضبوط تلقائيًا في `docker-compose.yml`. أما المتصفح فيرى الصور على `http://localhost:8000`، أي قيمة `APP_URL`.
 - `node_modules` و `.next` الخاصة بالواجهة في Volumes منفصلة، حتى لا تتعارض مع ملفات Windows وتكون أسرع.
 
+## ملفا البيئة
+
+| الملف | لمن | يحتوي |
+|---|---|---|
+| `.env` (الجذر) | `docker-compose.yml` | كلمات مرور MySQL، المنافذ، `DOCKER_UID`، `SHOW_API_CONTRACTS` |
+| `backend/.env` | Laravel | `APP_KEY`، `APP_URL`، بيانات الـ Seeders، البريد… |
+
+داخل Docker، `DB_DATABASE` و `DB_USERNAME` و `DB_PASSWORD` تُمرر من `.env` الجذر إلى حاوية `app` وتتقدم على قيم `backend/.env`، فتُكتب كلمة المرور في مكان واحد فقط.
+
 ## التشغيل لأول مرة
 
 ```bash
-# 1) إنشاء ملف البيئة
+# 1) إنشاء ملفي البيئة
 cp .env.example .env
+cp backend/.env.example backend/.env
 
-# 2) افتحي .env واملئي على الأقل:
-#    DB_PASSWORD=...        كلمة مرور مستخدم قاعدة البيانات
-#    DB_ROOT_PASSWORD=...   كلمة مرور root لـ MySQL
-#    SEED_ADMIN_EMAIL / SEED_ADMIN_PASSWORD  بيانات حساب الأدمن الأول
+# 2) املئي على الأقل:
+#    في .env:          DB_PASSWORD و DB_ROOT_PASSWORD
+#    في backend/.env:  SEED_ADMIN_EMAIL و SEED_ADMIN_PASSWORD (حساب الأدمن الأول)
 
 # 3) البناء والتشغيل
 docker compose up -d --build
@@ -89,7 +98,8 @@ docker compose logs -f app
 ## الملفات
 
 ```
-Dockerfile                 صورة app (PHP-FPM + extensions + Composer)، تعمل بمستخدم غير root
+backend/                   كود Laravel، ويُربط داخل app و nginx على /var/www
+Dockerfile                 صورة app (PHP-FPM + extensions + Composer)، تعمل بمستخدم غير root، تنسخ backend/
 docker-compose.yml         الخدمات والشبكة والـ Volumes
 docker/php/php.ini         حجم الرفع 25MB (ملف الكتاب حتى 20MB)
 docker/php/entrypoint.sh   تثبيت Composer وتوليد APP_KEY وتجهيز storage عند الإقلاع
@@ -99,24 +109,24 @@ docker/nginx/default.conf  إعداد Nginx لـ Laravel + خدمة /storage
 
 ## الملفات المرفوعة
 
-- **الأغلفة والصور الشخصية:** القرص `public` في `storage/app/public`، وتُخدم عبر `http://localhost:8000/storage/...` من Nginx مباشرة. لا حاجة لـ `php artisan storage:link`، لأن الروابط الرمزية لا تعمل بشكل موثوق داخل مجلدات Windows المشتركة.
-- **ملفات الكتب (PDF):** القرص الخاص `local` في `storage/app/private`، وغير متاحة من الرابط مباشرة. ستُقدَّم عبر Endpoint محمي عند تطوير ميزة القراءة.
+- **الأغلفة والصور الشخصية:** القرص `public` في `backend/storage/app/public`، وتُخدم عبر `http://localhost:8000/storage/...` من Nginx مباشرة. لا حاجة لـ `php artisan storage:link`، لأن الروابط الرمزية لا تعمل بشكل موثوق داخل مجلدات Windows المشتركة.
+- **ملفات الكتب (PDF):** القرص الخاص `local` في `backend/storage/app/private`، وغير متاحة من الرابط مباشرة. ستُقدَّم عبر Endpoint محمي عند تطوير ميزة القراءة.
 
 ## حل المشاكل الشائعة
 
 | المشكلة | الحل |
 |---|---|
-| `Set DB_PASSWORD in .env` عند التشغيل | املئي `DB_PASSWORD` و `DB_ROOT_PASSWORD` في `.env` |
-| `app` يتوقف فورًا | `docker compose logs app`. غالبًا `.env` غير موجود، أو فشل `composer install` بسبب الإنترنت |
-| `SQLSTATE[HY000] [2002] Connection refused` | تأكدي أن `DB_HOST=db` في `.env`، وأن `db` حالتها `healthy` في `docker compose ps` |
-| `Access denied for user` بعد تغيير كلمة المرور في `.env` | MySQL يقرأ كلمات المرور عند **أول** إنشاء للـ Volume فقط. إما أن تعيدي الكلمة القديمة، أو تحذفي الـ Volume (`docker compose down -v`، وهذا يحذف البيانات) |
+| `Set DB_PASSWORD in .env` عند التشغيل | املئي `DB_PASSWORD` و `DB_ROOT_PASSWORD` في `.env` بجذر المستودع |
+| `app` يتوقف فورًا | `docker compose logs app`. غالبًا `backend/.env` غير موجود، أو فشل `composer install` بسبب الإنترنت |
+| `SQLSTATE[HY000] [2002] Connection refused` | تأكدي أن `db` تعمل، وأن `db` حالتها `healthy` في `docker compose ps` |
+| `Access denied for user` بعد تغيير كلمة المرور في `.env` الجذر | MySQL يقرأ كلمات المرور عند **أول** إنشاء للـ Volume فقط. إما أن تعيدي الكلمة القديمة، أو تحذفي الـ Volume (`docker compose down -v`، وهذا يحذف البيانات) |
 | المنفذ 8000 أو 3306 مستخدم | غيري `APP_PORT` أو `FORWARD_DB_PORT` في `.env` |
 | `413 Request Entity Too Large` عند رفع كتاب | الحد 30MB في Nginx و 25MB في PHP؛ تأكدي من حجم الملف |
 | بطء شديد على Windows | ضعي المشروع داخل نظام ملفات WSL2 (مثل `\\wsl$\Ubuntu\home\...`) بدل `C:\Users\...` |
-| أخطاء صلاحيات الكتابة في `storage` على Linux | اضبطي `DOCKER_UID` و `DOCKER_GID` في `.env` على ناتج `id -u` و `id -g`، ثم `docker compose up -d --build` |
+| أخطاء صلاحيات الكتابة في `backend/storage` على Linux | اضبطي `DOCKER_UID` و `DOCKER_GID` في `.env` على ناتج `id -u` و `id -g`، ثم `docker compose up -d --build` |
 | تعديلات الواجهة لا تظهر فورًا (Hot Reload بطيء على Windows) | هذه مشكلة معروفة في مشاركة الملفات بين Windows و Docker. شغّلي الواجهة خارج Docker: `cd frontend && npm install && npm run dev`، مع `LARAVEL_API_URL=http://localhost:8000/api` في `frontend/.env.local`. أو انقلي المشروع إلى WSL2 |
 | الواجهة تعرض "تعذر الاتصال بالخادم" | تأكدي أن `nginx` و `app` يعملان (`docker compose ps`)، وأن `LARAVEL_API_URL` صحيح |
-| صور الأغلفة لا تظهر | تأكدي أن `APP_URL=http://localhost:8000` في `.env` |
+| صور الأغلفة لا تظهر | تأكدي أن `APP_URL=http://localhost:8000` في `backend/.env` |
 | الطلب يرجع HTML بدل JSON | كل مسارات `/api/*` ترجع JSON الآن. تأكدي أن الرابط يبدأ بـ `/api/` |
 
 ## الإنتاج

@@ -5,7 +5,7 @@ set -e
 cd /var/www
 
 if [ ! -f .env ]; then
-    echo "[lalalibrary] ERROR: ملف .env غير موجود. انسخه أولًا: cp .env.example .env" >&2
+    echo "[lalalibrary] ERROR: ملف backend/.env غير موجود. انسخه أولًا: cp backend/.env.example backend/.env" >&2
     exit 1
 fi
 

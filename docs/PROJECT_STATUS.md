@@ -37,7 +37,7 @@
 | 19 | التوصيات | C | — | §11 | ⏳ |
 | 20 | إحصائيات لوحة التحكم | B | (أعداد من الـ Endpoints الحالية) | `/admin/stats` (§12) | ✅ الأعداد · ⏳ الإحصائيات |
 | 21 | ترجمة رسائل الـ API | C | — | §13 | — |
-| 22 | بيئة Docker | A | app, nginx, db, frontend | Mailpit و Queue Worker عند الحاجة | — |
+| 22 | بيئة Docker | A | app, nginx, db, frontend · هيكلية backend/ و frontend/ | Mailpit و Queue Worker عند الحاجة | — |
 
 ⏳ تعني: الواجهة مبنية بالكامل ومربوطة بالعقد، وتتفعّل تلقائيًا عند إضافة الـ Endpoint. التفاصيل في `BACKEND_PENDING.md`، قسم "كيف تعرف الواجهة".
 

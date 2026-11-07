@@ -4,16 +4,32 @@
 
 | الجزء | التقنية | المجلد |
 |---|---|---|
-| Backend API | Laravel 12 · PHP 8.2 · Sanctum (Bearer Tokens) | جذر المستودع |
+| Backend API | Laravel 12 · PHP 8.2 · Sanctum (Bearer Tokens) | `backend/` |
 | Database | MySQL 8.0 | خدمة `db` في Docker |
 | Frontend | Next.js 16 · React 19 · TypeScript · Tailwind 4 | `frontend/` |
+
+## هيكلية المستودع
+
+```
+lalalibrary/
+├─ backend/              كل كود Laravel (app, routes, database, config, storage…) وملف backend/.env
+├─ frontend/             كل كود Next.js
+├─ docker/               إعدادات nginx و php المشتركة
+├─ docs/                 الوثائق المشتركة (العقود، حالة المشروع، سجل التعديلات)
+├─ Dockerfile            صورة PHP لخدمة app (تنسخ backend/)
+├─ docker-compose.yml    كل الخدمات
+└─ .env                  متغيرات Docker (المنافذ، كلمات مرور قاعدة البيانات)
+```
+
+أوامر `php artisan` و `composer` تُنفذ داخل الحاوية (`docker compose exec app ...`)، ومجلد العمل فيها هو `backend/`.
 
 ## التشغيل السريع
 
 المتطلب الوحيد: Docker Desktop.
 
 ```bash
-cp .env.example .env          # ثم املئي DB_PASSWORD و DB_ROOT_PASSWORD وبيانات الأدمن
+cp .env.example .env                  # متغيرات Docker: املئي DB_PASSWORD و DB_ROOT_PASSWORD
+cp backend/.env.example backend/.env  # إعدادات Laravel: املئي بيانات الأدمن SEED_ADMIN_*
 docker compose up -d --build
 docker compose exec app php artisan migrate --seed
 ```
@@ -27,7 +43,7 @@ docker compose exec app php artisan migrate --seed
 
 | الحساب | البريد | كلمة المرور |
 |---|---|---|
-| Admin | `SEED_ADMIN_EMAIL` من `.env` | `SEED_ADMIN_PASSWORD` من `.env` (أو تُطبع عند التشغيل إن تُركت فارغة) |
+| Admin | `SEED_ADMIN_EMAIL` من `backend/.env` | `SEED_ADMIN_PASSWORD` من `backend/.env` (أو تُطبع عند التشغيل إن تُركت فارغة) |
 | مستخدمون | `sdra@example.com`, `dalaa@example.com`, `test@example.com` | `SEED_USER_PASSWORD` (الافتراضي `password`) |
 
 ## المصادقة
